@@ -1,0 +1,34 @@
+spring.application.name=controlador
+
+# Spring Boot sobe automaticamente os containers do compose.yaml
+spring.docker.compose.enabled=true
+spring.docker.compose.file=compose.yaml
+spring.docker.compose.lifecycle-management=start-and-stop
+
+# Segredo do Token JWT (usa a variavel do .env se existir)
+api.security.token.secret=${API_SECURITY_TOKEN_SECRET:seu_segredo_jwt_padrao}
+
+# PostgreSQL vem do container (porta 5433 mapeada no compose.yaml)
+spring.datasource.url=jdbc:postgresql://localhost:5433/${POSTGRES_DB:Controlador}
+spring.datasource.username=${POSTGRES_USER:postgres}
+spring.datasource.password=${POSTGRES_PASSWORD:sua_senha_postgres}
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA / Hibernate
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Inicializacao do banco via data.sql (executa sempre ao subir)
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+
+# Redis vem do container (porta 6379 mapeada no compose.yaml)
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.password=${REDIS_PASSWORD:sua_senha_redis}
+
+# Cache gerenciado pelo Redis
+spring.cache.type=redis
+spring.cache.redis.time-to-live=3600000
+spring.cache.redis.cache-null-values=false
