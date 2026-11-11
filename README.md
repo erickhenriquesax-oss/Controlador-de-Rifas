@@ -5,7 +5,7 @@
 
 **Stack:** Java 25 · Spring Boot 4.1.1 · Spring Security e JWT · Spring Data JPA · PostgreSQL · Redis · springdoc-openapi (Swagger)
 
-API REST para controlar rifas e a venda de cotas. Um operador cadastra as rifas, com preço e quantidade de cotas, cadastra os compradores (clientes) e registra quantas cotas cada cliente comprou. A API calcula o valor total de cada compra, impede vendas acima das cotas disponíveis e bloqueia novas compras quando a rifa é encerrada.
+API REST de uso interno para o gestor controlar suas rifas e a venda de cotas. O gestor cadastra as rifas, com preço e quantidade de cotas, cadastra os compradores (clientes) e registra quantas cotas cada cliente comprou. A API calcula o valor total de cada compra, impede vendas acima das cotas disponíveis e bloqueia novas compras quando a rifa é encerrada.
 
 A API também gerencia os usuários que operam o sistema e seus tipos, e oferece autenticação por token.
 
@@ -38,11 +38,11 @@ A API também gerencia os usuários que operam o sistema e seus tipos, e oferece
 
 ## Fluxo principal de uma rifa
 
-1. **Cadastro da rifa:** o operador cria a rifa com descrição, preço da cota e quantidade total de cotas. A rifa começa `ABERTA`.
-2. **Cadastro dos clientes:** o operador cadastra os compradores com nome, e-mail e telefone.
-3. **Venda de cotas:** o operador registra a compra informando o cliente, a rifa e a quantidade. A API confere se a rifa está aberta e se ainda há cotas disponíveis, e calcula o total com o preço da cota naquele momento.
+1. **Cadastro da rifa:** o gestor cria a rifa com descrição, preço da cota e quantidade total de cotas. A rifa começa `ABERTA`.
+2. **Cadastro dos clientes:** o gestor cadastra os compradores com nome, e-mail e telefone.
+3. **Venda de cotas:** o gestor registra a compra informando o cliente, a rifa e a quantidade. A API confere se a rifa está aberta e se ainda há cotas disponíveis, e calcula o total com o preço da cota naquele momento.
 4. **Ajustes:** enquanto a rifa está aberta, uma compra pode ser alterada (outra quantidade, outro cliente ou outra rifa) ou cancelada. As cotas canceladas voltam a ficar disponíveis.
-5. **Encerramento:** o operador encerra a rifa. A partir daí, as compras ficam congeladas: não é possível comprar, alterar nem cancelar. Se necessário, a rifa pode ser reaberta.
+5. **Encerramento:** o gestor encerra a rifa. A partir daí, as compras ficam congeladas: não é possível comprar, alterar nem cancelar. Se necessário, a rifa pode ser reaberta.
 
 ### Estados da rifa
 
@@ -163,9 +163,11 @@ Os tipos ficam em `tb_tipo_usuario` e são associados às autoridades pelo enum 
 |---:|---|---|
 | 1 | ADMIN | `ROLE_ADMIN` |
 
-Hoje existe um único papel. É possível cadastrar novos tipos em `/controlador/tipo-usuario`, mas eles só podem ser usados por usuários depois de mapeados no enum `UserRoles`. Cadastrar um usuário com um tipo sem papel mapeado retorna `400` e nada é gravado.
+O papel único é proposital: a API é um gerenciador de uso interno, operado apenas pelo gestor das rifas. Não há venda direta ao público. O gestor cadastra as rifas e os clientes e registra as compras de cotas feitas por eles. Por isso não existem papéis separados para comprador ou vendedor.
 
-O cadastro de usuários (`POST /controlador/usuario`) é público. Para criar o primeiro operador, basta cadastrá-lo com `idTipoUsuario: 1` e fazer login.
+É possível cadastrar novos tipos em `/controlador/tipo-usuario`, mas eles só podem ser usados por usuários depois de mapeados no enum `UserRoles`. Cadastrar um usuário com um tipo sem papel mapeado retorna `400` e nada é gravado.
+
+O cadastro de usuários (`POST /controlador/usuario`) é público. Para criar o primeiro gestor, basta cadastrá-lo com `idTipoUsuario: 1` e fazer login.
 
 ## Autenticação
 
@@ -176,7 +178,7 @@ POST /controlador/usuario/login
 Content-Type: application/json
 
 {
-  "email": "operador@exemplo.com",
+  "email": "gestor@exemplo.com",
   "senha": "sua-senha"
 }
 ```
@@ -294,15 +296,15 @@ As respostas trazem `id`, `idCliente`, `nomeCliente`, `telefoneCliente`, `idRifa
 
 Os exemplos abaixo assumem que `TOKEN` foi obtido pelo login e que os IDs correspondem a registros existentes. Substitua os valores pelos dados do seu banco.
 
-Cadastrar o primeiro operador (rota pública):
+Cadastrar o primeiro gestor (rota pública):
 
 ```http
 POST /controlador/usuario
 Content-Type: application/json
 
 {
-  "nome": "Operador inicial",
-  "email": "operador@exemplo.com",
+  "nome": "Gestor",
+  "email": "gestor@exemplo.com",
   "senha": "troque-por-uma-senha-forte",
   "idTipoUsuario": 1
 }
@@ -492,7 +494,7 @@ As regras de negócio e os erros foram validados manualmente pela API em execuç
 
 - Os testes automatizados cobrem só a subida do contexto; as regras de negócio ainda não têm testes de unidade ou integração.
 - O projeto ainda não inclui uma coleção Postman/Insomnia.
-- Existe um único papel (`ADMIN`), e o cadastro de usuários é público: qualquer pessoa pode criar um operador com acesso total.
+- O cadastro de usuários (`POST /controlador/usuario`) é público. Como o único papel é o de gestor (`ADMIN`), quem tiver acesso à URL da API consegue criar uma conta com acesso total. Em um ambiente publicado, restrinja esse cadastro (por exemplo, exigindo token de um gestor já existente) depois de criar a primeira conta.
 - Token ausente ou inválido responde `403` em vez de `401`, com o corpo padrão do Spring.
 - Tokens emitidos continuam válidos até expirar, mesmo depois de troca de senha ou exclusão do usuário.
 - Criação e exclusão respondem `200 OK`, e não `201 Created` / `204 No Content`.
