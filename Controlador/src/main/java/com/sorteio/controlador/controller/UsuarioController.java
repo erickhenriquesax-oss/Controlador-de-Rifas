@@ -1,5 +1,7 @@
 package com.sorteio.controlador.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.sorteio.controlador.config.TokenConfig;
 import com.sorteio.controlador.dto.request.LoginDto;
 import com.sorteio.controlador.dto.request.UsuarioRequestDto;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "1. Usuários", description = "Cadastro de usuários e login (gera o token JWT)")
 @RestController
 @RequestMapping("/controlador/usuario")
 public class UsuarioController {
@@ -30,6 +33,7 @@ public class UsuarioController {
     @Autowired
     private TokenConfig tokenConfig;
 
+    @SecurityRequirements
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginDto loginDto) {
         UsernamePasswordAuthenticationToken usuarioAndSenha =
@@ -41,6 +45,7 @@ public class UsuarioController {
         return ResponseEntity.ok(new LoginResponse(token));
     }
 
+    @SecurityRequirements
     @PostMapping
     public ResponseEntity<UsuarioResponseDto> save(@Valid @RequestBody UsuarioRequestDto dto) {
         UsuarioModel usuario = usuarioService.save(dto);

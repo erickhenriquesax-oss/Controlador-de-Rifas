@@ -5,10 +5,11 @@ import com.sorteio.controlador.model.TipoUsuarioModel;
 import com.sorteio.controlador.model.UsuarioModel;
 import com.sorteio.controlador.repository.TipoUsuarioRepository;
 import com.sorteio.controlador.repository.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,15 +25,16 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Transactional
     public UsuarioModel save(UsuarioRequestDto dto) {
-        if (usuarioRepository.existsByEmail(dto.email())) {
-            throw new IllegalArgumentException("Já existe um usuário cadastrado com este e-mail.");
+        if (usuarioRepository.existsByEmailIgnoreCase(dto.email())) {
+            throw new IllegalStateException("Já existe um usuário cadastrado com este e-mail.");
         }
         if (usuarioRepository.existsByNome(dto.nome())) {
-            throw new IllegalArgumentException("Já existe um usuário cadastrado com este nome.");
+            throw new IllegalStateException("Já existe um usuário cadastrado com este nome.");
         }
 
-        TipoUsuarioModel tipo = tipoUsuarioRepository.findById(dto.idTipoUsuario()).orElseThrow();
+        TipoUsuarioModel tipo = findTipo(dto.idTipoUsuario());
 
         UsuarioModel usuario = new UsuarioModel();
         usuario.setNome(dto.nome());
@@ -48,16 +50,27 @@ public class UsuarioService {
     }
 
     public UsuarioModel findById(Long id) {
-        return usuarioRepository.findById(id).orElseThrow();
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + id));
     }
 
     public UsuarioModel findByEmail(String email) {
-        return usuarioRepository.findByEmail(email).orElseThrow();
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o e-mail: " + email));
     }
 
+    @Transactional
     public UsuarioModel update(Long id, UsuarioRequestDto dto) {
         UsuarioModel usuario = findById(id);
-        TipoUsuarioModel tipo = tipoUsuarioRepository.findById(dto.idTipoUsuario()).orElseThrow();
+
+        if (usuarioRepository.existsByEmailIgnoreCaseAndIdNot(dto.email(), id)) {
+            throw new IllegalStateException("Já existe outro usuário cadastrado com este e-mail.");
+        }
+        if (usuarioRepository.existsByNomeAndIdNot(dto.nome(), id)) {
+            throw new IllegalStateException("Já existe outro usuário cadastrado com este nome.");
+        }
+
+        TipoUsuarioModel tipo = findTipo(dto.idTipoUsuario());
 
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
@@ -70,6 +83,21 @@ public class UsuarioService {
     }
 
     public void deleteById(Long id) {
-        usuarioRepository.deleteById(id);
+        usuarioRepository.delete(findById(id));
+    }
+
+    private TipoUsuarioModel findTipo(Long idTipoUsuario) {
+        TipoUsuarioModel tipo = tipoUsuarioRepository.findById(idTipoUsuario)
+                .orElseThrow(() -> new EntityNotFoundException("Tipo de usuário não encontrado com o ID: " + idTipoUsuario));
+
+        // Valida ANTES de gravar: o tipo precisa ter uma permissão mapeada em UserRoles,
+        // senão o usuário seria salvo e depois quebraria a listagem e o login.
+        try {
+            tipo.toUserRole();
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("O tipo de usuário \"" + tipo.getDescricao()
+                    + "\" (ID " + idTipoUsuario + ") não possui permissão de acesso configurada.");
+        }
+        return tipo;
     }
 }

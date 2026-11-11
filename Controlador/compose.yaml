@@ -1,14 +1,14 @@
 services:
   postgres:
     image: postgres:18
-    container_name: controlador-postgres
+    container_name: controlador-rifas-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?Defina POSTGRES_DB no arquivo .env}
       POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER no arquivo .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
@@ -19,13 +19,17 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: controlador-redis
+    container_name: controlador-rifas-redis
     restart: unless-stopped
+    # O Spring Boot não sabe ler a senha do --requirepass; com este label ele
+    # continua subindo o container, mas usa spring.data.redis.* (com a senha).
+    labels:
+      org.springframework.boot.ignore: true
     command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Defina REDIS_PASSWORD no arquivo .env}"]
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?Defina REDIS_PASSWORD no arquivo .env}
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:

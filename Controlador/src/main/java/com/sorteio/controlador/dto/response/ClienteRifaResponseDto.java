@@ -25,7 +25,7 @@ public record ClienteRifaResponseDto(
                 model.getCliente().getTelefone(),
                 model.getRifa().getId(),
                 model.getRifa().getDescricao(),
-                model.getRifa().getPreco(),
+                model.getPrecoUnitario() != null ? model.getPrecoUnitario() : model.getRifa().getPreco(),
                 model.getQuantidade(),
                 model.getTotal(),
                 model.getDataCompra()

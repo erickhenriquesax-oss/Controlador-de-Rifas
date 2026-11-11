@@ -1,6 +1,7 @@
 package com.sorteio.controlador.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sorteio.controlador.enums.StatusRifa;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,6 +29,15 @@ public class RifaModel implements Serializable {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
+
+    // Total de cotas (números) disponíveis para venda nesta rifa
+    @Column(name = "quantidade_cotas")
+    private Integer quantidadeCotas;
+
+    // Default no banco para não quebrar rifas já existentes (ddl-auto=update)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'ABERTA'")
+    private StatusRifa status = StatusRifa.ABERTA;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "rifa", fetch = FetchType.LAZY)

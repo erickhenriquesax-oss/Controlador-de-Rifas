@@ -8,8 +8,8 @@ spring.docker.compose.lifecycle-management=start-and-stop
 # Segredo do Token JWT (usa a variavel do .env se existir)
 api.security.token.secret=${API_SECURITY_TOKEN_SECRET:seu_segredo_jwt_padrao}
 
-# PostgreSQL vem do container (porta 5433 mapeada no compose.yaml)
-spring.datasource.url=jdbc:postgresql://localhost:5433/${POSTGRES_DB:Controlador}
+# PostgreSQL vem do container (porta 5434 mapeada no compose.yaml)
+spring.datasource.url=jdbc:postgresql://localhost:5434/${POSTGRES_DB:Controlador}
 spring.datasource.username=${POSTGRES_USER:postgres}
 spring.datasource.password=${POSTGRES_PASSWORD:sua_senha_postgres}
 spring.datasource.driver-class-name=org.postgresql.Driver
@@ -23,12 +23,15 @@ spring.jpa.properties.hibernate.format_sql=true
 spring.sql.init.mode=always
 spring.jpa.defer-datasource-initialization=true
 
-# Redis vem do container (porta 6379 mapeada no compose.yaml)
+# Redis vem do container (porta 6380 mapeada no compose.yaml)
 spring.data.redis.host=localhost
-spring.data.redis.port=6379
+spring.data.redis.port=6380
 spring.data.redis.password=${REDIS_PASSWORD:sua_senha_redis}
 
 # Cache gerenciado pelo Redis
 spring.cache.type=redis
 spring.cache.redis.time-to-live=3600000
 spring.cache.redis.cache-null-values=false
+
+# Recusa número decimal em campo inteiro (ex.: quantidade 1.5 -> 400)
+spring.jackson.deserialization.accept-float-as-int=false

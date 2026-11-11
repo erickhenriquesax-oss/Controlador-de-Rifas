@@ -1,5 +1,6 @@
 package com.sorteio.controlador.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.sorteio.controlador.dto.request.ClienteRifaRequestDto;
 import com.sorteio.controlador.dto.response.ClienteRifaResponseDto;
 import com.sorteio.controlador.model.ClienteRifaModel;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "5. Compras", description = "Compra de cotas: bloqueia rifa encerrada e venda acima das cotas")
 @RestController
 @RequestMapping("/controlador/cliente-rifa")
 public class ClienteRifaController {
@@ -55,6 +57,12 @@ public class ClienteRifaController {
                 .map(ClienteRifaResponseDto::new)
                 .toList();
         return ResponseEntity.ok(list);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ClienteRifaResponseDto> atualizar(@PathVariable Long id, @Valid @RequestBody ClienteRifaRequestDto dto) {
+        ClienteRifaModel compra = clienteRifaService.atualizar(id, dto);
+        return ResponseEntity.ok(new ClienteRifaResponseDto(compra));
     }
 
     @DeleteMapping("/{id}")

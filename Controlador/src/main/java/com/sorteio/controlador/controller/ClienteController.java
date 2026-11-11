@@ -1,5 +1,6 @@
 package com.sorteio.controlador.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.sorteio.controlador.dto.request.ClienteRequestDto;
 import com.sorteio.controlador.dto.response.ClienteResponseDto;
 import com.sorteio.controlador.model.ClienteModel;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "3. Clientes", description = "Compradores das rifas")
 @RestController
 @RequestMapping("/controlador/cliente")
 public class ClienteController {

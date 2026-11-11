@@ -1,5 +1,6 @@
 package com.sorteio.controlador.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.sorteio.controlador.dto.request.TipoUsuarioRequestDto;
 import com.sorteio.controlador.dto.response.TipoUsuarioResponseDto;
 import com.sorteio.controlador.model.TipoUsuarioModel;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "2. Tipos de usuário", description = "Perfis de acesso (ADMIN = id 1)")
 @RestController
 @RequestMapping("/controlador/tipo-usuario")
 public class TipoUsuarioController {

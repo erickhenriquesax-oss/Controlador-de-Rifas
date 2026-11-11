@@ -14,7 +14,7 @@ public record UsuarioRequestDto(
         String email,
 
         @NotBlank(message = "A senha é obrigatória")
-        @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
+        @Size(min = 6, max = 72, message = "A senha deve ter entre 6 e 72 caracteres")
         String senha,
 
         @NotNull(message = "O ID do tipo de usuário é obrigatório")

@@ -32,8 +32,12 @@ public class ClienteRifaModel implements Serializable {
     @Column(nullable = false)
     private Integer quantidade; // Quantas cotas o cliente comprou
 
+    // Preço da cota no momento da compra (não muda se o preço da rifa for alterado depois)
+    @Column(name = "preco_unitario", precision = 10, scale = 2)
+    private BigDecimal precoUnitario;
+
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal total; // quantidade * rifa.preco
+    private BigDecimal total; // quantidade * precoUnitario
 
     @Column(nullable = false)
     private LocalDateTime dataCompra = LocalDateTime.now();
